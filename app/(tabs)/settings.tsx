@@ -1,4 +1,4 @@
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { Background, GlassCard, Screen } from '@/src/components';
 import { useCalmStore } from '@/src/store/useCalmStore';
@@ -15,6 +15,16 @@ export default function SettingsScreen() {
   const resetData = useCalmStore((state) => state.resetData);
 
   const handleReset = () => {
+    if (Platform.OS === 'web') {
+      if (
+        typeof window !== 'undefined' &&
+        window.confirm('Reset All Data? This will reset your calm minutes, sessions, and streak to zero.')
+      ) {
+        resetData();
+      }
+      return;
+    }
+
     Alert.alert(
       'Reset All Data',
       'This will reset your calm minutes, sessions, and streak to zero. This cannot be undone.',

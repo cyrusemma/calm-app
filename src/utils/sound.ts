@@ -52,3 +52,4 @@ export function playCalmChime(): void {
     // Graceful fallback if audio is not permitted by browser autoplay policy
   }
 }
+
