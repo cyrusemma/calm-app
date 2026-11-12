@@ -1,74 +1,115 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 
-import { Background, GlassCard, Screen } from '@/src/components';
+import { Background, Screen } from '@/src/components';
 import { useCalmStore } from '@/src/store/useCalmStore';
-import { colors, spacing, typography } from '@/src/theme';
+import { colors, radii, spacing, typography } from '@/src/theme';
+
+const PLANTS = [
+  { name: 'First Sprout', needed: 0, symbol: '🌱' },
+  { name: 'Quiet Fern', needed: 1, symbol: '🌿' },
+  { name: 'Lucky Clover', needed: 3, symbol: '🍀' },
+  { name: 'Cherry Blossom', needed: 5, symbol: '🌸' },
+  { name: 'Hibiscus', needed: 10, symbol: '🌺' },
+  { name: 'Sunflower', needed: 15, symbol: '🌻' },
+  { name: 'Old Oak', needed: 25, symbol: '🌳' },
+  { name: 'Palm Shade', needed: 40, symbol: '🌴' },
+  { name: 'Desert Calm', needed: 60, symbol: '🌵' },
+  { name: 'Free Spirit', needed: 90, symbol: '🦋' },
+  { name: 'After Rain', needed: 120, symbol: '🌈' },
+  { name: 'Guiding Star', needed: 180, symbol: '⭐' },
+] as const;
 
 export default function GardenScreen() {
   const calmMinutes = useCalmStore((state) => state.calmMinutes);
-  const plants = [
-    { name: 'First sprout', needed: 0, symbol: '✦' },
-    { name: 'Quiet fern', needed: 3, symbol: '❋' },
-    { name: 'Soft tree', needed: 10, symbol: '✿' },
-  ];
+  const unlockedCount = PLANTS.filter((p) => calmMinutes >= p.needed).length;
 
   return (
     <Background>
       <Screen>
-        <GlassCard>
-          <Text style={styles.title}>Garden</Text>
-          <Text style={styles.body}>{calmMinutes} calm minutes</Text>
-          <View style={styles.garden}>
-            {plants.map((plant) => {
-              const unlocked = calmMinutes >= plant.needed;
-              return (
-                <View key={plant.name} style={[styles.plant, !unlocked && styles.lockedPlant]}>
-                  <Text accessibilityLabel={unlocked ? plant.name : 'Plant waiting to grow'} style={styles.symbol}>
-                    {unlocked ? plant.symbol : '·'}
-                  </Text>
-                  <Text style={styles.plantName}>{unlocked ? plant.name : 'Growing gently'}</Text>
-                </View>
-              );
-            })}
-          </View>
-        </GlassCard>
+        <FlatList
+          data={PLANTS}
+          keyExtractor={(item) => item.name}
+          numColumns={3}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <View style={styles.header}>
+              <Text style={styles.title}>Garden</Text>
+              <Text style={styles.minutes}>{calmMinutes} calm minutes</Text>
+              <Text style={styles.blooming}>
+                {unlockedCount} / {PLANTS.length} blooming
+              </Text>
+            </View>
+          }
+          renderItem={({ item }) => {
+            const unlocked = calmMinutes >= item.needed;
+            return (
+              <View style={[styles.plantCard, !unlocked && styles.lockedCard]}>
+                <Text style={styles.symbol}>{unlocked ? item.symbol : '·'}</Text>
+                <Text style={styles.plantName} numberOfLines={1}>
+                  {item.name}
+                </Text>
+                <Text style={styles.plantMinutes}>{item.needed} min</Text>
+              </View>
+            );
+          }}
+        />
       </Screen>
     </Background>
   );
 }
 
 const styles = StyleSheet.create({
+  header: {
+    marginBottom: spacing.xl,
+  },
   title: {
     color: colors.text,
     fontSize: typography.title,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
-  body: {
+  minutes: {
     color: colors.textMuted,
     fontSize: typography.body,
   },
-  garden: {
-    gap: spacing.lg,
-    marginTop: spacing.xxl,
+  blooming: {
+    color: colors.teal,
+    fontSize: typography.caption,
+    marginTop: spacing.xs,
   },
-  plant: {
+  listContent: {
+    paddingBottom: spacing.huge,
+  },
+  row: {
+    gap: spacing.md,
+    marginBottom: spacing.md,
+  },
+  plantCard: {
     alignItems: 'center',
-    backgroundColor: 'rgba(93, 156, 154, 0.22)',
-    borderRadius: typography.title,
-    flexDirection: 'row',
-    minHeight: 64,
-    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.glassFill,
+    borderColor: colors.glassBorder,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    flex: 1,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.lg,
   },
-  lockedPlant: {
-    opacity: 0.55,
+  lockedCard: {
+    opacity: 0.4,
   },
   symbol: {
-    color: colors.sand,
-    fontSize: typography.title,
-    marginRight: spacing.lg,
+    fontSize: 36,
+    marginBottom: spacing.sm,
   },
   plantName: {
     color: colors.text,
-    fontSize: typography.body,
+    fontSize: typography.caption,
+    textAlign: 'center',
+  },
+  plantMinutes: {
+    color: colors.textMuted,
+    fontSize: 11,
+    marginTop: spacing.xs,
   },
 });

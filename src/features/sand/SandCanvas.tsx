@@ -7,9 +7,15 @@ type Point = { x: number; y: number };
 
 type SandCanvasProps = {
   onDraw: () => void;
+  strokeColor?: string;
+  strokeWidth?: number;
 };
 
-export function SandCanvas({ onDraw }: SandCanvasProps) {
+export function SandCanvas({
+  onDraw,
+  strokeColor = colors.sand,
+  strokeWidth = 4,
+}: SandCanvasProps) {
   const [points, setPoints] = useState<Point[]>([]);
   const currentPoints = useRef<Point[]>([]);
   const lastRender = useRef(0);
@@ -51,6 +57,9 @@ export function SandCanvas({ onDraw }: SandCanvasProps) {
             style={[
               styles.line,
               {
+                backgroundColor: strokeColor,
+                borderRadius: strokeWidth,
+                height: strokeWidth,
                 left: previous.x,
                 top: previous.y,
                 transform: [{ rotate: `${angle}rad` }],
@@ -74,9 +83,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   line: {
-    backgroundColor: colors.sand,
-    borderRadius: 4,
-    height: 4,
     position: 'absolute',
     transformOrigin: 'left center',
   },

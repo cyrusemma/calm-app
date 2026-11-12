@@ -1,32 +1,102 @@
-import { StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { Background, GlassCard, Screen } from '@/src/components';
 import { useCalmStore } from '@/src/store/useCalmStore';
-import { colors, spacing, typography } from '@/src/theme';
+import { colors, radii, spacing, typography } from '@/src/theme';
 
 export default function SettingsScreen() {
   const hapticsEnabled = useCalmStore((state) => state.hapticsEnabled);
   const soundEnabled = useCalmStore((state) => state.soundEnabled);
   const setHapticsEnabled = useCalmStore((state) => state.setHapticsEnabled);
   const setSoundEnabled = useCalmStore((state) => state.setSoundEnabled);
+  const calmMinutes = useCalmStore((state) => state.calmMinutes);
+  const totalSessions = useCalmStore((state) => state.totalSessions);
+  const streakDays = useCalmStore((state) => state.streakDays);
+  const resetData = useCalmStore((state) => state.resetData);
+
+  const handleReset = () => {
+    Alert.alert(
+      'Reset All Data',
+      'This will reset your calm minutes, sessions, and streak to zero. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: () => resetData(),
+        },
+      ],
+    );
+  };
 
   return (
     <Background>
       <Screen>
-        <GlassCard>
+        <ScrollView showsVerticalScrollIndicator={false}>
           <Text style={styles.title}>Settings</Text>
-          <Text style={styles.body}>Choose what supports your relaxing space.</Text>
-          <View style={styles.rows}>
-            <SettingRow
-              label="Haptics"
-              value={hapticsEnabled}
-              onValueChange={setHapticsEnabled}
-            />
-            <SettingRow label="Sound" value={soundEnabled} onValueChange={setSoundEnabled} />
+
+          {/* Stats */}
+          <GlassCard style={styles.section}>
+            <Text style={styles.sectionTitle}>Your Journey</Text>
+            <View style={styles.statsRow}>
+              <StatItem label="Calm minutes" value={calmMinutes} />
+              <StatItem label="Sessions" value={totalSessions} />
+              <StatItem label="Streak" value={`${streakDays}d`} />
+            </View>
+          </GlassCard>
+
+          {/* Preferences */}
+          <GlassCard style={styles.section}>
+            <Text style={styles.sectionTitle}>Preferences</Text>
+            <View style={styles.rows}>
+              <SettingRow
+                label="Haptics"
+                value={hapticsEnabled}
+                onValueChange={setHapticsEnabled}
+              />
+              <SettingRow
+                label="Sound"
+                value={soundEnabled}
+                onValueChange={setSoundEnabled}
+              />
+            </View>
+          </GlassCard>
+
+          {/* About */}
+          <GlassCard style={styles.section}>
+            <Text style={styles.sectionTitle}>About</Text>
+            <Text style={styles.aboutName}>Calm</Text>
+            <Text style={styles.aboutVersion}>Version 1.0.0</Text>
+            <Text style={styles.aboutTagline}>A gentle space for your mind.</Text>
+          </GlassCard>
+
+          {/* Reset */}
+          <View style={styles.section}>
+            <Pressable
+              accessibilityLabel="Reset all data"
+              accessibilityRole="button"
+              onPress={handleReset}
+              style={styles.resetButton}>
+              <Text style={styles.resetText}>Reset All Data</Text>
+            </Pressable>
           </View>
-        </GlassCard>
+        </ScrollView>
       </Screen>
     </Background>
+  );
+}
+
+type StatItemProps = {
+  label: string;
+  value: number | string;
+};
+
+function StatItem({ label, value }: StatItemProps) {
+  return (
+    <View style={styles.statItem}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
   );
 }
 
@@ -55,15 +125,34 @@ const styles = StyleSheet.create({
   title: {
     color: colors.text,
     fontSize: typography.title,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xl,
   },
-  body: {
-    color: colors.textMuted,
+  section: {
+    marginBottom: spacing.lg,
+  },
+  sectionTitle: {
+    color: colors.text,
     fontSize: typography.body,
+    marginBottom: spacing.lg,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    color: colors.teal,
+    fontSize: typography.title,
+    marginBottom: spacing.xs,
+  },
+  statLabel: {
+    color: colors.textMuted,
+    fontSize: typography.caption,
   },
   rows: {
     gap: spacing.sm,
-    marginTop: spacing.xxl,
   },
   row: {
     alignItems: 'center',
@@ -73,6 +162,34 @@ const styles = StyleSheet.create({
   },
   rowLabel: {
     color: colors.text,
+    fontSize: typography.body,
+  },
+  aboutName: {
+    color: colors.text,
+    fontSize: typography.body,
+  },
+  aboutVersion: {
+    color: colors.textMuted,
+    fontSize: typography.caption,
+    marginTop: spacing.xs,
+  },
+  aboutTagline: {
+    color: colors.textMuted,
+    fontSize: typography.caption,
+    fontStyle: 'italic',
+    marginTop: spacing.sm,
+  },
+  resetButton: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(220, 80, 80, 0.15)',
+    borderColor: 'rgba(220, 80, 80, 0.4)',
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  resetText: {
+    color: '#DC5050',
     fontSize: typography.body,
   },
 });
